@@ -1,0 +1,12 @@
+{
+  "ver": "1.1.2",
+  "uuid": "172e4bd5-b5e6-41a3-9a88-04662fe30981",
+  "isBundle": true,
+  "bundleName": "Dian21",
+  "priority": 1,
+  "compressionType": {},
+  "optimizeHotUpdate": {},
+  "inlineSpriteFrames": {},
+  "isRemoteBundle": {},
+  "subMetas": {}
+}

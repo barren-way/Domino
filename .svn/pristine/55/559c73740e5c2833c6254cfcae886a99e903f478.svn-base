@@ -1,0 +1,434 @@
+
+import CardData_domino from "./CardData_domino"
+import Gambling from "./Gambling"
+import MsgArg from "./MsgArg"
+
+
+
+export default class GameCtrl{
+    lastEvent:string=null
+    ifMsg:Boolean=false
+    
+    args:MsgArg=null
+    id:number=0
+    gambling:Gambling=null
+
+    deck:number[]=[]
+
+    choosingCard=null
+    rivalChoosingCard=null
+
+
+    LONG:number=160
+
+    canPlay:boolean=true
+    rivalCanPlay:boolean=true
+
+    rivalPlay:boolean=false
+
+    init(){
+        this.args=new MsgArg
+        this.gambling=new Gambling
+        this.createDeck()
+        this.shuffleDeck()
+
+               
+    }
+    //创建牌堆
+    createDeck(){
+        for(let i=0;i<49;i++){
+            this.deck[i]=i+1
+        }
+    }
+    //洗牌
+    shuffleDeck(){
+        for(let i=0;i<49;i++){
+            let ram1=parseInt(Math.random()*49+'')
+            let ram2=parseInt(Math.random()*49+'')
+            let mid:number=0
+            mid=this.deck[ram1]
+            this.deck[ram1]=this.deck[ram2]
+            this.deck[ram2]=mid
+        }
+
+    }
+
+
+    getMsg(event:string){
+        this.lastEvent=event
+        
+        switch(this.lastEvent){
+            case 'free_match':
+                this.ifMsg=true
+                break
+            case 'state':
+                this.setState()
+                this.ifMsg=true
+                break
+            case 'choose_card':
+                //console.log('------------------ctrl---getMsg------------')
+                this.chooseCard()
+                this.ifMsg=true
+                break
+            case 'choose_side':
+                this.chooseSide()
+                this.ifMsg=true
+                break
+            case 'null':
+                break
+        }
+    }
+
+
+    setState(){
+        this.args.state='deal'
+        for(let i=0;i<6;i++){
+            this.args.cards.push(this.deck[i])
+            
+            this.gambling.handCard.push(this.deck[i])
+            
+        }
+        console.log(this.args.cards)
+        console.log(this.args.rivalCards)
+
+    }
+
+    chooseSide(){
+        var c_data=CardData_domino.getPokerData(this.args.choosingCard)
+        
+        if(this.gambling.leftCardNum==0){           
+            this.gambling.leftCardNum++
+            this.gambling.rightCardNum++        
+            this.args.rotate=-90
+            this.gambling.onLeftNum=c_data.up
+            this.gambling.onRightNum=c_data.down
+            this.args.leftPos-=this.LONG
+            this.args.rightPos+=this.LONG
+            this.changeHandCard(this.gambling.handCard)
+            this.args.handCardNum--
+            return
+        }
+        if(this.args.choosingSide=='left'){
+            this.gambling.leftCardNum++
+
+
+            
+            //this.args.rotate= c_data.up==this.gambling.onLeftNum? 90:-90
+            this.changeChoosePos(this.args.choosingSide) 
+            this.changeCardPos(this.args.choosingSide)
+            this.gambling.onLeftNum= c_data.up==this.gambling.onLeftNum? c_data.down:c_data.up
+        }
+        else{
+            this.gambling.rightCardNum++
+            
+            //this.args.rotate= c_data.up==this.gambling.onRightNum? -90:90 
+            this.changeChoosePos(this.args.choosingSide) 
+            this.changeCardPos(this.args.choosingSide)  
+            this.gambling.onRightNum= c_data.up==this.gambling.onRightNum? c_data.down:c_data.up   
+        }
+
+        this.args.handCardNum--
+        this.changeHandCard(this.gambling.handCard)
+        
+    }
+
+    changeChoosePos(side){
+        var c_data=CardData_domino.getPokerData(this.args.choosingCard)
+        var num= side=='left'? this.gambling.leftCardNum:this.gambling.rightCardNum    
+        if(num>=0&&num<5||num>=17&&num<25){
+            if(side=='left'){
+                this.args.leftPos-=this.LONG
+                this.args.chooseRotateLeft=90
+                               
+            }
+            else{
+                this.args.rightPos+=this.LONG
+                this.args.chooseRotateRight=90
+                             
+            }
+        }
+        else if(num>=5&&num<6||num>=25&&num<26){
+            if(side=='left'){
+                this.args.leftPos-=this.LONG*3/4
+                this.args.chooseRotateLeft=0
+                this.args.leftPosY-= this.LONG/4
+            }
+            else{
+                this.args.rightPos+=this.LONG*3/4
+                this.args.chooseRotateRight=0
+                this.args.rightPosY+= this.LONG/4
+            }
+        }
+        else if(num>=6&&num<7||num>=26&&num<27){
+            if(side=='left'){
+                this.args.leftPos+=this.LONG*3/4
+                this.args.chooseRotateLeft=90
+                this.args.leftPosY-= this.LONG/4
+            }
+            else{
+                this.args.rightPos-=this.LONG*3/4
+                this.args.chooseRotateRight=90
+                this.args.rightPosY+= this.LONG/4
+            }
+        }
+        else if(num>=7&&num<15||num>=27&&num<35){
+            if(side=='left'){
+                this.args.leftPos+=this.LONG
+                this.args.chooseRotateLeft=90
+            }
+            else{
+                this.args.rightPos-=this.LONG
+                this.args.chooseRotateRight=90
+            }
+        }
+        else if(num>=16&&num<17){
+            if(side=='left'){
+                this.args.leftPos-=this.LONG*3/4
+                this.args.chooseRotateLeft=90
+                this.args.leftPosY-= this.LONG/4
+            }
+            else{
+                this.args.rightPos+=this.LONG*3/4
+                this.args.chooseRotateRight=90
+                this.args.rightPosY+= this.LONG/4
+            }
+        }
+        else if(num>=15&&num<16){
+            if(side=='left'){
+                this.args.leftPos+=this.LONG*3/4
+                this.args.chooseRotateLeft=0
+                this.args.leftPosY-= this.LONG/4
+            }
+            else{
+                this.args.rightPos-=this.LONG*3/4
+                this.args.chooseRotateRight=0
+                this.args.rightPosY+= this.LONG/4
+            }
+        }
+        console.log(this.args.rotate)       
+    }
+    changeCardPos(side){
+        var c_data=CardData_domino.getPokerData(this.args.choosingCard)
+        var num= side=='left'? this.gambling.leftCardNum:this.gambling.rightCardNum  
+        if(num>=0&&num<6||num>=17&&num<26){
+            if(side=='left'){
+                this.args.rotate= c_data.up==this.gambling.onLeftNum? 90:-90
+            }
+            else{
+                this.args.rotate= c_data.up==this.gambling.onRightNum? -90:90
+            }
+        }
+        else if(num>=6&&num<7||num>=16&&num<17||num>=26&&num<27){
+            if(side=='left'){
+                this.args.rotate= c_data.up==this.gambling.onLeftNum? 0:180
+            }
+            else{
+                this.args.rotate= c_data.up==this.gambling.onRightNum? -180:0
+            }
+        }
+        else if(num>=7&&num<16||num>=27&&num<36){
+            if(side=='left'){
+                this.args.rotate= c_data.up==this.gambling.onLeftNum? -90:90
+            }
+            else{
+                this.args.rotate= c_data.up==this.gambling.onRightNum? 90:-90
+            }
+        }
+    }
+
+    changeHandCard(handCard){
+        //var handCard=this.gambling.handCard
+        for(let i=0;i<handCard.length;i++){
+            if(handCard[i]==this.args.choosingCard){
+                this.gambling.handCard.splice(i,1)
+                break
+            }
+        }
+        console.log("choose side handcard")
+        //this.gambling.handCard.splice(,1)
+        console.log(this.gambling.handCard)
+    }
+
+    ifSupplement(){
+        //检查手牌，不能出就发牌
+        this.changeHandCard(this.gambling.handCard)  
+        this.canPlay= this.checkHandCard(this.gambling.handCard) 
+        console.log('if can play:'+this.canPlay)   
+        if(!this.canPlay){
+            this.reDeal()
+            
+        }
+
+    }
+
+    
+
+    checkHandCard(handCard){
+        //var handCard=this.gambling.handCard
+        for(let i=0;i<handCard.length;i++){
+            var c_data=CardData_domino.getPokerData(handCard[i])
+            if(c_data.up==this.gambling.onLeftNum||c_data.down==this.gambling.onLeftNum){
+                return true
+            }
+            if(c_data.up==this.gambling.onRightNum||c_data.down==this.gambling.onRightNum){
+                return true
+            }
+        }
+        return false        
+    }
+
+
+
+    reDeal(){
+        this.lastEvent='reDeal'
+        this.ifMsg=true
+        var dealtCardNum=this.gambling.dealtCardNum
+        this.args.cards.push(this.deck[dealtCardNum])
+        //console.log('deal card num:'+dealtCardNum)
+        //console.log('deal card:'+this.deck[dealtCardNum])
+        this.gambling.handCard.push(this.deck[dealtCardNum])
+        //console.log(this.gambling.handCard)
+        this.gambling.dealtCardNum++
+        this.args.handCardNum++
+    }
+
+    chooseCard(){
+        var c_data=CardData_domino.getPokerData(this.args.choosingCard)
+        
+        this.args.state='choosing'
+        if(this.gambling.onLeftNum<0){
+            this.args.outLeft=true;
+            this.args.outRight=true;
+        }
+        else{
+            if(c_data.up==this.gambling.onLeftNum||c_data.down==this.gambling.onLeftNum){
+                this.args.outLeft=true;
+                //this.setChooseArea('left',this.gambling.leftCardNum)
+                
+            }
+            else{
+                this.args.outLeft=false; 
+            }
+            if(c_data.up==this.gambling.onRightNum||c_data.down==this.gambling.onRightNum){
+                this.args.outRight=true;
+                //this.setChooseArea('right',this.gambling.rightCardNum)
+
+            }
+            else{
+                this.args.outRight=false; 
+            }
+        }
+        
+    }
+
+    /*rivalPlayCard(){  
+        this.rivalCanPlay= this.checkHandCard(this.gambling.rivalHandCard) 
+        var rivalHandCard=this.gambling.rivalHandCard
+
+        console.log('rivAL if can play:'+this.canPlay)   
+        if(!this.rivalCanPlay){
+
+            //this.reDeal()
+
+        }
+
+        for(let i=0;i<rivalHandCard.length;i++){
+            var c_data=CardData_domino.getPokerData(rivalHandCard[i])
+            if(c_data.up==this.gambling.onLeftNum||c_data.down==this.gambling.onLeftNum){
+                this.args.rivalChoosingCard=rivalHandCard[i]
+                this.args.rivalChoosingSide='left'
+                break
+            }
+            if(c_data.up==this.gambling.onRightNum||c_data.down==this.gambling.onRightNum){
+                this.args.rivalChoosingCard=rivalHandCard[i]
+                this.args.rivalChoosingSide='right'
+                break
+            }
+        }
+        var c_data=CardData_domino.getPokerData(this.args.rivalChoosingCard)
+        if(this.args.rivalChoosingSide=='left'){
+            this.gambling.leftCardNum++  
+            //this.args.rotate= c_data.up==this.gambling.onLeftNum? 90:-90
+            //this.changeChoosePos(this.args.rivalChoosingSide) 
+            this.changeCardPos(this.args.rivalChoosingSide)
+            this.gambling.onLeftNum= c_data.up==this.gambling.onLeftNum? c_data.down:c_data.up
+        }
+        else{
+            this.gambling.rightCardNum++
+            
+            //this.args.rotate= c_data.up==this.gambling.onRightNum? -90:90 
+            //this.changeChoosePos(this.args.rivalChoosingSide) 
+            this.changeCardPos(this.args.rivalChoosingSide)  
+            this.gambling.onRightNum= c_data.up==this.gambling.onRightNum? c_data.down:c_data.up   
+        }
+        this.args.rivalCardNum--
+        this.changeHandCard(this.gambling.rivalHandCard)
+        console.log('rival card:'+this.args.rivalChoosingCard)
+        this.lastEvent='rivalPlay'
+        this.ifMsg=true
+
+
+        
+
+    }*/
+
+    /*setChooseArea(side,num){
+        //if(num<=1){return}
+        if(num>=0&&num<4){
+            if(side=='left')
+            {               
+                this.args.chooseRotateLeft=90
+                this.args.leftPos-=this.LONG
+                
+            }
+            else{
+
+                this.args.chooseRotateRight=90
+                this.args.rightPos+=this.LONG
+
+            }
+            
+            console.log('changed')
+        
+        }
+        else if(num>=4&&num<6){
+            if(side=='left')
+            {
+                this.args.chooseRotateLeft=0
+                this.args.leftPos-=this.LONG*3/4
+            }
+            else{
+                this.args.chooseRotateRight=0
+                this.args.rightPos-=this.LONG*3/4
+            }
+        }
+
+    }*/
+
+    sendData(data,event){
+        switch(event){
+            case 'choose_card':
+                this.args.choosingCard=data
+                break
+            case 'choose_side':
+                this.args.choosingSide=data    
+ 
+
+
+        } 
+
+    }
+
+    getArg(){
+        return this.args;
+    }
+    getid(){
+        return this.id
+    }
+
+    getEvent(){
+        return this.lastEvent
+    }
+
+
+}

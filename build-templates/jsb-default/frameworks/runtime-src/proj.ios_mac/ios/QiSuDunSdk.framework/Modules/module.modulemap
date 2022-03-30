@@ -1,0 +1,6 @@
+framework module QiSuDunSdk {
+  umbrella header "QiSuDunSdk.h"
+
+  export *
+  module * { export * }
+}

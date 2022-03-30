@@ -1,0 +1,61 @@
+
+TH.png
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+6
+  rotate: false
+  xy: 352, 34
+  size: 167, 183
+  orig: 167, 183
+  offset: 0, 0
+  index: -1
+7
+  rotate: false
+  xy: 2, 14
+  size: 166, 203
+  orig: 166, 203
+  offset: 0, 0
+  index: -1
+8
+  rotate: false
+  xy: 170, 34
+  size: 180, 183
+  orig: 180, 183
+  offset: 0, 0
+  index: -1
+C
+  rotate: false
+  xy: 521, 105
+  size: 216, 112
+  orig: 216, 112
+  offset: 0, 0
+  index: -1
+CHIP
+  rotate: false
+  xy: 739, 143
+  size: 192, 74
+  orig: 192, 74
+  offset: 0, 0
+  index: -1
+H1
+  rotate: true
+  xy: 978, 185
+  size: 32, 44
+  orig: 32, 44
+  offset: 0, 0
+  index: -1
+H2
+  rotate: false
+  xy: 933, 174
+  size: 43, 43
+  orig: 43, 43
+  offset: 0, 0
+  index: -1
+HEART
+  rotate: true
+  xy: 739, 2
+  size: 139, 143
+  orig: 139, 166
+  offset: 0, 0
+  index: -1

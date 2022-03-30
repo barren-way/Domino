@@ -1,0 +1,82 @@
+
+NE.png
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+21
+  rotate: false
+  xy: 2, 2
+  size: 103, 67
+  orig: 103, 67
+  offset: 0, 0
+  index: -1
+flash1
+  rotate: false
+  xy: 593, 178
+  size: 56, 54
+  orig: 56, 54
+  offset: 0, 0
+  index: -1
+flash2
+  rotate: false
+  xy: 593, 178
+  size: 56, 54
+  orig: 56, 54
+  offset: 0, 0
+  index: -1
+light1
+  rotate: false
+  xy: 107, 48
+  size: 22, 21
+  orig: 22, 21
+  offset: 0, 0
+  index: -1
+light2
+  rotate: false
+  xy: 107, 48
+  size: 22, 21
+  orig: 22, 21
+  offset: 0, 0
+  index: -1
+light7
+  rotate: false
+  xy: 107, 48
+  size: 22, 21
+  orig: 22, 21
+  offset: 0, 0
+  index: -1
+light3
+  rotate: false
+  xy: 107, 48
+  size: 22, 21
+  orig: 22, 21
+  offset: 0, 0
+  index: -1
+light6
+  rotate: false
+  xy: 107, 48
+  size: 22, 21
+  orig: 22, 21
+  offset: 0, 0
+  index: -1
+light5
+  rotate: false
+  xy: 107, 48
+  size: 22, 21
+  orig: 22, 21
+  offset: 0, 0
+  index: -1
+light4
+  rotate: false
+  xy: 107, 48
+  size: 22, 21
+  orig: 22, 21
+  offset: 0, 0
+  index: -1
+neon
+  rotate: false
+  xy: 2, 71
+  size: 589, 161
+  orig: 589, 161
+  offset: 0, 0
+  index: -1

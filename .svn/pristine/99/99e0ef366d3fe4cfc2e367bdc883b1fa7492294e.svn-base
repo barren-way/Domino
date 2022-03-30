@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.game.game786"
+    android:versionCode="2"
+    android:versionName="2.0.1"
+    android:installLocation="auto">
+
+    <uses-feature android:glEsVersion="0x00020000" />
+	<uses-feature
+        android:name="android.hardware.camera"
+        android:required="true" />
+    <uses-feature android:name="android.hardware.camera.autofocus" />
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" /> 
+	<uses-permission android:name="android.permission.CHANGE_WIFI_STATE" /> 
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS"
+        tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.READ_LOGS"
+        tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <!-- 获取地理位置的权限，可选 -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <application
+        android:allowBackup="true"
+        android:label="@string/app_name"
+        android:usesCleartextTraffic="true"
+        android:icon="@mipmap/ic_launcher">
+        
+        <!-- Tell Cocos2dxActivity the name of our .so -->
+        <meta-data android:name="android.app.lib_name"
+                   android:value="cocos2djs" />
+        <receiver android:name="com.youme.im.NetworkStatusReceiver" android:label="NetworkConnection" >
+            <intent-filter>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+            </intent-filter>
+        </receiver>
+        
+        <activity
+            android:name="org.cocos2dx.javascript.AppActivity"
+            android:screenOrientation="sensorLandscape"
+            android:configChanges="orientation|keyboardHidden|screenSize|screenLayout"
+            android:label="@string/app_name"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+            android:launchMode="singleTask"
+            android:taskAffinity="" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <!--分享到默往app中卡片点击回调地址-->
+            <!--根据data中scheme配置,在默往开放平台填写对应scheme,并在分享代码中设置对应参,点击默往聊天中的对应分享的卡片将直接跳转到当前地址-->
+            <!--开放平台scheme填写注意: 如在scheme中填写mostone 则开放平台添加为 mostone://
+                  若添加host参数,则在开放平台需要拼接对应的参数
+                  如下面配置 则在开放平台scheme配置为 mostone://open.demo.com  -->
+            <intent-filter>
+                <data android:host="com.tencent.tmgp.ssqp" android:scheme="mostone"/>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+            </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="z5zp6s"/>
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name="com.tencent.tmgp.ssqp.wxapi.WXEntryActivity"
+            android:label="@string/app_name"
+            android:theme="@android:style/Theme.Translucent"
+            android:exported="true">
+        </activity>
+
+        <activity
+            android:name="com.tencent.tmgp.ssqp.wxapi.WXPayEntryActivity"
+            android:label="@string/app_name"
+            android:theme="@android:style/Theme.Translucent"
+            android:exported="true">
+        </activity>
+
+        <!--默往分享结果回调通知-->
+        <!--注意 exported 需要设置为true,否则数据无法返回-->
+        <!--注意 launchMode 需要设置为singleTask,-->
+        <activity
+            android:name="com.mostone.share.sdk.ui.MLifeEntryActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:theme="@style/TransTheme" >
+        </activity>
+
+        <!--默往app下载引导页-->
+        <!--手机不存在默往app,sdk会引导前往默往下载web-->
+        <activity
+            android:name="com.mostone.share.sdk.ui.MLifeWebActivity"
+            android:screenOrientation="landscape"
+            android:windowSoftInputMode="adjustPan" >
+        </activity>
+
+        <service
+            android:name="com.baidu.location.f" android:enabled="true" android:process=":remote">
+        </service>
+
+        <meta-data
+            android:name="com.baidu.lbsapi.API_KEY"
+            android:value="zixzyqlhMth8q6i6WCs8POH1vMSOeR7G" />
+        <meta-data
+		    android:name="com.openinstall.APP_KEY"
+		    android:value="z5zp6s"/>
+
+    </application>
+
+</manifest>

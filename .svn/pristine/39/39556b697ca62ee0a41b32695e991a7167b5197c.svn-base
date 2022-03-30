@@ -1,0 +1,26 @@
+
+kaishiqiangzhuang-1.png
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+bj
+  rotate: false
+  xy: 2, 405
+  size: 896, 230
+  orig: 898, 232
+  offset: 1, 1
+  index: -1
+kaishiqiangzhuang
+  rotate: false
+  xy: 2, 2
+  size: 679, 199
+  orig: 681, 201
+  offset: 1, 1
+  index: -1
+youxikaishi
+  rotate: false
+  xy: 2, 203
+  size: 684, 200
+  orig: 686, 202
+  offset: 1, 1
+  index: -1

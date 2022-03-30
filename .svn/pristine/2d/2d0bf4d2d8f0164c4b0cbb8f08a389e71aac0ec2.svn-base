@@ -1,0 +1,47 @@
+
+XZ.png
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+6
+  rotate: false
+  xy: 2, 46
+  size: 164, 189
+  orig: 164, 189
+  offset: 0, 0
+  index: -1
+K
+  rotate: false
+  xy: 342, 46
+  size: 131, 189
+  orig: 131, 189
+  offset: 0, 0
+  index: -1
+chip1
+  rotate: false
+  xy: 168, 82
+  size: 172, 153
+  orig: 172, 153
+  offset: 0, 0
+  index: -1
+chip2
+  rotate: false
+  xy: 2, 6
+  size: 63, 38
+  orig: 63, 38
+  offset: 0, 0
+  index: -1
+flash1
+  rotate: true
+  xy: 67, 3
+  size: 41, 43
+  orig: 41, 43
+  offset: 0, 0
+  index: -1
+flash2
+  rotate: true
+  xy: 112, 2
+  size: 42, 43
+  orig: 42, 43
+  offset: 0, 0
+  index: -1

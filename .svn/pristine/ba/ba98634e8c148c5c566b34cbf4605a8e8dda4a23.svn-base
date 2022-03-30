@@ -1,0 +1,517 @@
+import { g } from '../../../Framework/Script/G'
+import NetData from '../../Common/Script/NetData'
+import { cfg } from '../../Common/Script/Config'
+import { GameDef } from '../../Common/Script/GameDef'
+import BDLangManager from "../../Common/Script/Lang/BDLangManager";
+import { LangDef } from "../../Common/Script/Lang/LangDef";
+import LocalDB from "../../../Framework/Script/Engine/LocalDB";
+import BundleManager from '../../../Framework/Script/Engine/BundleManager';
+import CardData_domino from './domino_game/CardData_domino';
+import GameCtrl from './domino_game/GameCtrl';
+
+const {ccclass, property} = cc._decorator;
+var tag_lang = {
+    "zh-CN":"tog_zh",
+    "en-US":"tog_en",
+    "zh-TW":"tog_tw",
+    "ar-EG":"tog_eg",
+    "id-ID":"tog_id",
+    "ja-JP":"tog_jp",
+    "vi-VN":"tog_vn",
+}
+
+@ccclass
+export default class DominoUI extends cc.Component {
+    //四个按钮
+    @property(cc.Node)
+    layer_btn: cc.Node = null;
+    //两个按钮
+    @property(cc.Node)
+    layer_btnSecure: cc.Node = null;
+    //一个按钮
+    @property(cc.Node)
+    layer_over: cc.Node = null;
+    //玩家nod
+    @property(cc.Node)
+    player: cc.Node = null;
+
+    @property(cc.Node)
+    card_area: cc.Node = null;
+
+    @property(cc.Node)
+    master: cc.Node = null;
+
+    @property(cc.Node)
+    nod_girl: cc.Node[] = [];
+    //房间号
+    @property(cc.Label)
+    room_num: cc.Label = null;
+    //等待动画
+    @property(cc.Node)
+    nod_waiting: cc.Node = null;
+    
+    //选项
+    @property(cc.Node)
+    nod_lan_select: cc.Node = null;
+
+    @property(cc.Label)
+    txt_lan_cur: cc.Label = null;
+
+    @property(cc.Node)
+    card_parent:cc.Node=null;
+
+
+
+
+
+
+
+    //-----------参数----------------------
+    //暂停，时间相关
+    is_run = false;
+    timer=0;
+    area_t=null;
+    is_waitMe = false;
+
+
+    data_result = null;
+    //等级
+    match_idx = 1;
+    m_gameCtrl:GameCtrl=null
+
+    lastEvent=null
+
+    restartArg=null
+
+    
+
+    onLoad(): void {
+        g.AudioMgr.playMusic("music_21");
+        //使用语言
+        let curLangName = LocalDB.get(LangDef.LOCAL_LANGNAME)
+        if (curLangName) {
+            this.change_lang_tog(curLangName);
+        }
+        this.nod_lan_select.active = false;
+        /*if (cfg.isFormal) {
+            //cfg.isFormal服务器参数（true正式服，false测试服)
+            this.nod_lan_select.active = false;
+        }*/
+
+    }
+
+    /*onDestroy(): void {
+        g.MsgCache.clearCache();
+    }*/
+
+    change_lang_tog(lan){
+        this.txt_lan_cur.string = lan;
+        let tog_name = null
+        for(let k in tag_lang){
+            if(k==lan){
+                tog_name = tag_lang[k]
+                break;
+            }
+        }
+        
+        let tog_select = this.nod_lan_select.getChildByName("tog_select")
+        if(tog_name && tog_select){
+            for(let i in tog_select.children){
+                let c_lang = tog_select.children[i]
+                if(c_lang.name == tog_name){
+                    c_lang.getComponent(cc.Toggle).check();
+                    break;
+                }
+            }
+        }
+    }
+    onCreate(data) {
+        this.m_gameCtrl=new GameCtrl
+        this.m_gameCtrl.init()
+        this.initGame();
+        //this.initCache();
+
+        /*if (data && data.type) {
+            if (data.type == "playing") {
+                g.NetSocket.send("back", {}, true)
+            } else {
+                g.NetSocket.send('free_match', { level: 1 }, true);
+            }
+        }*/
+
+    }
+
+    initGame(){
+
+        //等待动画是否播放，开始后在cmd_free_start函数中关闭该动画
+        //完成refer_game函数后再取消注释
+        this.nod_waiting.active = true;
+        this.nod_waiting.getChildByName("item_wait").active = true;
+        this.nod_waiting.getChildByName("btn_cancel").active = false;
+        this.nod_waiting.getChildByName("btn_match").active = false;
+        this.m_gameCtrl.init()
+
+        this.room_num.node.active = false;
+        this.hide_btns();
+        //this.master.getComponent("Master_21").clean()
+        this.player.active=false
+        //初始化player
+        //this.player.getComponent("PokerPlayer_21").resetInfo();
+        //设置座位值1-5
+        //this.player.getComponent("PokerPlayer_21").setPosIndex(1);
+
+        this.girl_state(0);
+        this.card_parent.destroyAllChildren()
+
+        this.cmd_free_start(event, null, 0)
+        
+
+        console.log('---------------------iningame-----------------------')
+    }
+
+    /*initCache() {
+
+        g.MsgCache.clearCache();
+        //事件监听,将onMessageCache与MsgCache.HandleMsg绑定，在update中调用
+        g.MsgCache.setAgent(this.onMessageCache.bind(this));
+    }*/
+
+    //按钮初始化
+    hide_btns() {
+        this.layer_btn.active = false;
+        this.layer_btnSecure.active = false;
+        this.layer_over.active = false;
+    }
+
+    //切换girl图片
+    girl_state(g_state) {
+        for (var i in this.nod_girl) {
+            this.nod_girl[i].active = Number(i) == g_state;
+        }
+    }
+
+    checkMsg(){
+        if(this.m_gameCtrl.ifMsg){
+            
+            this.m_gameCtrl.ifMsg=false
+            this.difMessage(this.m_gameCtrl.getEvent(),this.m_gameCtrl.getArg(),this.m_gameCtrl.getid())
+        }
+    }
+
+
+    update(dt) {
+        /*if(this.m_gameCtrl.backMsg()){
+            this.lastEvent=this.m_gameCtrl.backMsg()
+            this.onMessage(this.lastEvent,)
+        }*/
+        this.checkMsg()    
+        //g.MsgCache.handleMsg();
+        if (this.is_run) {
+
+        } else {
+            if (this.timer > 0) {
+                this.timer -= dt;
+                if (this.timer <= 0) {
+                    this.msgContinue();
+                    if (this.area_t) {
+                        this.area_t.turn_spare();
+                        this.area_t = null;
+                    }
+                    if (this.is_waitMe) {
+                        this.layer_btn.active = true;
+                    }
+                }
+            }
+        }
+        //console.log('---------------------update-----------------------')
+    }
+    msgContinue() {
+        this.is_run = true;
+    }
+
+
+    //场景自带消息处理
+    /*onMessageCache(event: string, args: object, id: number) {
+        console.log('args:'+args)
+        switch (event) {
+            case 'free_start':
+                {
+                    this.cmd_free_start(event, args, id);
+                    this.restartArg=args
+                    break;
+                }
+            
+            case "quit":
+                break;
+        }
+    }*/
+
+
+    difMessage(event: string,args,id) {
+        switch (event) {
+            case 'free_match':
+                {
+                    this.cmd_free_start(event,this.restartArg, id);
+                    break;
+                }
+            case 'state':
+                {
+                    this.cache_state(event, args, id);
+                    break;
+                }
+            case 'choose_card':
+                {
+                    this.choose_card(event, args, id)
+                    //console.log(args)
+                    break;
+                }
+            case 'choose_side':
+                {
+                    this.choose_side(event, args, id)
+                    //console.log(args)
+                    break;
+                }
+            case 'reDeal':
+                {
+                    console.log('************reDeal***********')
+                    this.reDeal(event, args, id)
+                    break;
+                }
+            case 'rivalPlay':
+                {
+                    console.log('************rivalPlay***********')
+                    this.rivalPlay(event, args, id)
+                    break;
+                }
+            case "null":
+                break;
+        }
+    }
+
+
+    choose_card(event, args, id){
+        var c_data=CardData_domino.getPokerData(args.choosingCard)
+        console.log('outLeft:'+args.outLeft)
+        console.log('outRight:'+args.outRight)
+        console.log(args.rotate)
+        
+        
+        if(args.outLeft){
+            this.card_area.getComponent("CardArea_domino").setChooseAreaActive('left',1,args.leftPos,args.chooseRotateLeft,args.leftPosY)
+        }
+        else{
+            this.card_area.getComponent("CardArea_domino").setChooseAreaActive('left',0,args.leftPos,args.chooseRotateLeft,args.leftPosY)
+        }
+        if(args.outRight){
+            this.card_area.getComponent("CardArea_domino").setChooseAreaActive('right',1,args.rightPos,args.chooseRotateRight,args.rightPosY)
+        }
+        else{
+            this.card_area.getComponent("CardArea_domino").setChooseAreaActive('right',0,args.rightPos,args.chooseRotateRight,args.rightPosY)
+        }
+    }
+    choose_side(event, args, id){
+        var side=args.choosingSide
+        var pos= side=='left'? args.leftPos:args.rightPos
+        var card=args.choosingCard
+        var rotate=args.rotate
+        var num=args.onTableNum
+        
+        this.card_area.getComponent("CardArea_domino").moveCard(pos,side,card,rotate)
+        this.m_gameCtrl.ifSupplement()
+
+        //this.sendMsg('rival_choose_card')
+        //this.m_gameCtrl.rivalPlayCard()
+
+        
+    
+    }
+
+    rivalPlay(event, args, id){
+        
+        this.m_gameCtrl.ifSupplement()
+
+    }
+    reDeal(event, args, id){
+        if (args.cards) {
+                var c_data = args.cards[args.cards.length-1];
+                var area = this.card_area
+                if (area) {
+                    //创建并发牌
+                    area.getComponent("CardArea_domino").poker_start(c_data,args.handCardNum-1)
+                    this.m_gameCtrl.ifSupplement()
+                
+            }
+        }
+
+    }
+    
+    
+
+    cmd_free_start(event, args, eventid) {
+
+        
+        this.nod_waiting.active = false
+        this.referGame(args)
+        
+    }
+
+    
+
+    cache_state(event, args, eventid) {
+
+        if (!args) return;
+        if (eventid != 0) return;
+        if (args.record_id) {
+            this.room_num.node.active = true;
+            this.room_num.string = " " + args.record_id
+        }
+        //var my_info = g.Player;
+        //var my_id = my_info.getInfoBykey("id");
+        this.player.active=true
+        this.hide_btns();
+        this.layer_btnSecure.active=true
+
+        switch (args.state) {
+            case "deal":
+                {
+                    if (args.cards) {
+                        for (var i in args.cards) {
+                            var c_data = args.cards[i];
+                            var rival_c_data = args.rivalCards[i];
+
+
+                            var area = this.card_area
+                            if (area) {
+                                //创建并发牌
+                                area.getComponent("CardArea_domino").poker_start(c_data,i)
+
+                            }
+                        }
+                    }
+                    //庄家发牌
+                    //this.master.getComponent("Master_21").poker_start(args.master_cards);
+                    //隐藏按钮
+                    
+                    break;
+                }
+
+        }
+    }
+
+    
+
+    referGame(data){
+        //console.log('DominoUI---------------------refergame')
+        //设置服务器发送的桌号
+        /*if (data.desk && data.desk.record_id) {
+            this.room_num.node.active = true
+            this.room_num.string = " " + data.desk.record_id
+        } else {
+            this.room_num.string = ""
+        }*/
+        //隐藏按钮
+        this.hide_btns();
+        //将show_result函数传入master（庄家）
+        //this.master.getComponent("Master_21").setFuncOver(this.show_result.bind(this));
+        //庄家初始化
+        //this.master.getComponent("Master_21").clean()
+        //玩家初始化
+        //this.player.getComponent("PokerPlayer_21").resetInfo();
+        this.player.active = true
+        this.girl_state(0);
+        var my_info = g.Player;
+        var my_id = my_info.getInfoBykey("id");
+
+        this.card_parent.destroyAllChildren()
+
+        if (data) {
+            var states = data.states;
+            var players = data.players;
+            var seat_index = data.seat_index;
+            if (states) {
+                this.match_idx = states.level;
+            }
+            //根据服务器信息初始化玩家
+            if (players && seat_index) {
+                for (var i in seat_index) {
+                    var s_idx = seat_index[i];
+                    var cur_p = null;
+                    for (var j in players) {
+                        var p_data = players[j];
+                        if (p_data.idx == s_idx) {
+                            cur_p = p_data;
+                            break;
+                        }
+                    }
+                    if (cur_p) {
+                        var nod_player = this.player;
+                        if (nod_player) {
+                            nod_player.getComponent("PokerPlayer_21").setInfo(cur_p);
+                        }
+                    }
+                }
+            }
+            
+            /*var desk = data.desk;
+            if (desk.master_cards) {
+                this.master.getComponent("Master_21").get_poker(desk.master_cards, false);
+            }
+            console.log('desk.state'+desk.state)*/
+
+        }
+        this.layer_over.active=true
+    }
+
+
+
+    ClickGameBtn(btn, data) {
+        let name = btn.target.name
+        switch (name) {
+            //一个钮
+            case "btn_rematch":
+                //this.initGame();
+                //this.cmd_free_start('free_match', this.restartArg, 1);
+                this.sendMsg('state')
+                break;
+            //两个钮
+            case 'secure_yes':
+
+                this.m_gameCtrl=new GameCtrl
+                this.m_gameCtrl.init()
+                this.initchild()
+                this.card_area.getComponent("CardArea_domino").initPokers()
+                //g.NetSocket.send('free_match', { level: this.match_idx }, true);*/
+                //var thisSence=cc.director.getScene()
+                this.sendMsg('state')
+                //this.nod_waiting.active = false
+               
+                break
+
+            //点击牌
+            case "btn_card":
+                this.m_gameCtrl.sendData(data,'choose_card')
+                this.sendMsg('choose_card')              
+                break;
+
+            case 'btn_choose':
+                this.m_gameCtrl.sendData(data,'choose_side')
+                this.sendMsg('choose_side')              
+                break;
+
+
+        }
+    }
+
+    sendMsg(event:string){
+        this.m_gameCtrl.getMsg(event)
+    }
+    initchild(){
+        var child=this.card_parent.children
+        for(var i=0;i<child.length;i++)
+        {
+            child[i].destroy()
+        }
+    }
+
+
+}
